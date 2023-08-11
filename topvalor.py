@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, make_response
 from markupsafe import escape
 from flask import render_template
-
+from flask import request
 
 app = Flask(__name__)
 
@@ -9,27 +9,40 @@ app = Flask(__name__)
 def index():        
    return render_template('index.html')
 
-@app.route("/sobre")
-def sobre():
-    return "<h1> Varejão do seus sonhos </h1>"
+@app.route("/cad/usuario")
+def usuario():
+  return render_template('usuario.html', titulo="Cadastro de Usuario")
 
-@app.route("/sobre/privacidade")
-def privacidade():
-    return "<h4> Aqui no Top valor seu sonhos e seus dados estão seguros!</h4>"
+@app.route("/cad/caduser", methods=['POST'])
+def caduser():
+   return request.form
 
-@app.route("/user/<username>")
-def username(username):
-    cok = make_response ('<h2>cookie criado</h2>')
-    cok.set_cokie('username', username)
-    return cok
+@app.route("/cad/anuncios")
+def anuncios():
+   return render_template('anuncios.html')
 
-@app.route ("/user2/")
-@app.route("/user2/<username>")
-def username2(username=None):
-    cokusername = request.cookies.get('username')
-    print(cokusername)
-    return render_template('user.html',username=username, cokusername=cokusername)
+@app.route("/anuncios/pergunta")
+def perguntas():
+   return render_template('pergunta.html')
 
+@app.route ("/anuncios/compras")
+def compras():
+   print("anuncio comprado")
+   return ""
 
+@app.route("/anuncios/favoritos")
+def favoritos():
+   print("favorito inserido")
+   return ""
 
+@app.route("/config/categoria")
+def categoria():
+   return render_template('categoria.html') 
 
+@app.route("/relatorios/vendas")
+def relvendas():
+   return render_template('relvendas.html')
+
+@app.route("/relatorios/compras")
+def relcompras():
+   return render_template('relcompras.html')
