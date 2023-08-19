@@ -2,9 +2,27 @@ from flask import Flask, make_response
 from markupsafe import escape
 from flask import render_template
 from flask import request
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://Alessandra:alessadra@localhost:3306/bctopvalor'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
 
+db= SQLAlchemy (app)
+
+class Usuario (db.Model):
+   id= db.Column('usu_id', db.Integer, primary_key=True)
+   nome= db.Column('usu_nome', db.String(250))
+   email= db.Column('usu_email', db.String(250))
+   senha= db.Column('usu_senha', db.String(250))
+   end= db.Column ('usu_end', db.String(250))
+
+   def __init__(self,nome,email,senha,end):
+      self.nome = nome
+      self.email = email
+      self.senha = senha 
+      self.end = end 
+                    
 @app.route("/")
 def index():        
    return render_template('index.html')
@@ -46,3 +64,8 @@ def relvendas():
 @app.route("/relatorios/compras")
 def relcompras():
    return render_template('relcompras.html')
+
+if __name__== '__main__':
+    db.create_all()
+
+    
