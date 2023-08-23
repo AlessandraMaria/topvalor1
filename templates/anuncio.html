@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>    
+<title>Top valor - Comprar e vender - Cadastro do {{titulo}}</title>
+</head>
+
+<body>
+    <h4>Cadastro de {{titulo}}</h4>
+    <form action="/anuncio/novo" method="post">
+        <p><label for="nome">Nome</label></p>
+        <p><input type="text" id="nome" name="nome"></p>
+
+        <p><label for="desc">Desc</label></p>
+        <p><input type="textarea" rows="4" cols="50" id="desc" name="desc"></p>
+
+        <p><label for="qtd">Quantidade</label></p>
+        <p><input type="text" id="qtd" name="qtd"></p>
+
+        <p><label for="preco">Preco</label></p>
+        <p><input type="text" id="preco" name="preco"></p>
+
+        <p><label for="cat">Categoria</label>
+        <select id ="cat" name ="cat">
+            {% for categoria in categorias %}
+            <tr>
+                <td>{{anuncio.nome}}</td>
+                <td>{{anuncio.desc}}</td>
+                <td>{{anuncio.qtd}}</td>
+                <td>{{anuncio.preco}}</td>
+            </tr>
+            {% endfor %}       
+        </select></p>    
+    </form>
+    <h1>Bem Vindo ao Top Valor! anuncie suas vendas com mais facilidade</h1>
+</body>
+
+</html>
