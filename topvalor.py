@@ -60,12 +60,30 @@ def cadusuario():
   return render_template('usuario.html', usuarios= Usuario.query.all(),  titulo="Usuario")
 
 
-@app.route("/usuario/novo", methods=['POST'])
-def novousuario():
+@app.route("/usuario/criar", methods=['POST'])
+def criarusuario():
    usuario = Usuario(request.form.get('user'),request.form.get('email'), request.form.get('passwd'), request.form.get('end'))
    db.session.add(usuario)
    db.session.commit()  
    return redirect (url_for('cadusuario'))
+
+@app.route("/usuario/detalhar/<int:id>")
+def buscarusuario(id):
+   usuario = Usuario.query.get(id)
+   return usuario.nome
+
+@app.route("/usuario/editar/<int:id>", methods=['GET','POST'])
+def editarusuario(id):
+   usuario = Usuario.query.get(id)
+   return usuario.nome 
+
+@app.route("/usuario/deletar/<int:id>")
+def deletarusuario(id):
+   usuario = Usuario.query.get(id)
+   db.session.delete(usuario)
+   db.session.commit()
+   return redirect(url_for('cadusuario'))
+
 
 # na função get pega apenas os dados do usuario (pego o dado)
 # metodo post submeter alguma informação para o nosso servidor (mando o dado)
@@ -79,7 +97,7 @@ def novoanuncio():
 
 @app.route("/cad/anuncio")
 def anuncio():
-  return render_template('anuncio.html', anuncios= Anuncio.query.all(),  categorias = Categoria)
+  return render_template('anuncio.html', anuncio= Anuncio.query.all(),  categoria = Categoria)
 
 
 @app.route("/anuncios/pergunta")
@@ -106,7 +124,7 @@ def novacategoria():
 
 @app.route("/config/categoria")
 def categoria():
-  return render_template('categoria.html', categorias = Categoria.query.all(),  titulo = 'Categoria')
+  return render_template('categoria.html', categoria = Categoria.query.all(),  titulo = 'Categoria')
 
 
 @app.route("/relatorios/vendas")

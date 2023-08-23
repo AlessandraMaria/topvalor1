@@ -6,7 +6,7 @@
 
 <body>
     <h4>Cadastro de {{titulo}}</h4>
-    <form action="/usuario/novo" method="post">
+    <form action="/usuario/criar" method="post">
         <p><label for="user">Username</label></p>
         <p><input type="text" id="user" name="user"></p>
 
@@ -31,6 +31,7 @@
                 <th>E-mail</th>
                 <th>Senha</th>
                 <th>Endereco</th>
+                <th>Deletar</th>
             </tr>    
         </thead>
         <tbody>
@@ -40,6 +41,7 @@
                     <td>{{usuario.email}}</td>
                     <td>{{usuario.senha}}</td>
                     <td>{{usuario.end}}</td>
+                    <td><a href={{url_for("deletarusuario",id=usuario.id)}}>Deletar?</a></td>
                 </tr>
             {%endfor%}    
         </tbody>
