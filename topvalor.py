@@ -3,10 +3,13 @@ from flask import Flask, make_response
 from markupsafe import escape
 from flask import render_template
 from flask import request
-from flask import redirect
-from flask import url_for
 from flask_sqlalchemy import SQLAlchemy
-
+from flask import url_for
+from flask import redirect
+from flask_login import (current_user, LoginManager,
+                             login_user, logout_user,
+                             login_required)
+import hashlib
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://alessandra1:LEle!2023@localhost:3306/mydb'
@@ -14,7 +17,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+app.secret_key = 'pazebemeamor94'
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
 class Usuario (db.Model):
+   _tablename_ = "usuario"
    id= db.Column('usu_id', db.Integer, primary_key=True)
    nome= db.Column('usu_nome', db.String(250))
    email= db.Column('usu_email', db.String(250))
@@ -27,27 +36,74 @@ class Usuario (db.Model):
       self.senha = senha
       self.end = end 
 
-class Anuncio (db.Model):
-   id= db.Column('anu_id', db.Integer, primary_key=True)
-   nome= db.Column('anu_nome', db.String(250))
-   prod= db.Column('anu_prod', db.String(250))
-   qtd= db.Column('anu_qtd', db.String(250))
-   preco= db.Column ('anu_preco', db.Double)
-
-   def __init__(self,idanu,nome,prod,qtd,preco):
-      self.id = idanu
-      self.nome = nome
-      self.prod = prod
-      self.qtd = qtd
-      self.preco = preco
-
-class Categoria (db.Model):
-   id= db.Column('cat_id', db.Integer, primary_key=True)
-   prod= db.Column('cat_prod', db.String(250))
    
-   def __init__(self,idcat,prod):
-      self.id = idcat
-      self.prod = prod
+   def is_authenticated(self):
+      return True
+
+   def is_active(self):
+      return True
+
+   def is_anonymous(self):
+      return False
+
+   def get_id(self):
+      return str(self.id)   
+
+class Anuncio(db.Model):
+    __tablename__ = "anuncio"
+    id = db.Column('anu_id', db.Integer, primary_key=True)
+    nome = db.Column('anu_nome', db.String(256))
+    desc = db.Column('anu_desc', db.String(256))
+    qtd = db.Column('anu_qtd', db.Integer)
+    preco = db.Column('anu_preco', db.Double)
+    cat_id = db.Column('cat_id',db.Integer, db.ForeignKey("categoria.cat_id"))
+    usu_id = db.Column('usu_id',db.Integer, db.ForeignKey("usuario.usu_id"))
+
+    def __init__(self, nome, desc, qtd, preco, cat_id, usu_id):
+        self.nome = nome
+        self.desc = desc
+        self.qtd = qtd
+        self.preco = preco
+        self.cat_id = cat_id
+        self.usu_id = usu_id
+
+class Categoria(db.Model):
+    __tablename__ = "categoria"
+    id = db.Column('cat_id', db.Integer, primary_key=True)
+    nome = db.Column('cat_nome', db.String(256))
+    desc = db.Column('cat_desc', db.String(256))
+
+    def __init__ (self, nome, desc):
+        self.nome = nome
+        self.desc = desc
+
+@app.errorhandler(404)
+def paginanaoencontrada(error):
+   return render_template('paginanaoencontrada.html')
+
+@login_manager.user_loader
+def load_user(id):
+   return Usuario.query.get(id)
+
+@app.route("/login", methods=['GET','POST'])
+def login():
+   if request.method == 'POST':
+      email = request.form.get('email')
+      passwd = request.form.get('passwd')
+
+      user = Usuario.query.filter_by(email=email, senha=passwd).first()
+
+      if user:
+         login_user(user)
+         return redirect(url_for('index'))
+      else:
+         return redirect(url_for('login'))
+   return render_template('login.html')  
+
+@app.route("/logout") 
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
 
 
 # tipo de definição de rota                   
@@ -56,7 +112,8 @@ def index():
    return render_template('index.html')
 
 @app.route("/cad/usuario")
-def cadusuario():
+@login_required
+def usuario():
   return render_template('usuario.html', usuarios= Usuario.query.all(),  titulo="Usuario")
 
 
@@ -65,7 +122,7 @@ def criarusuario():
    usuario = Usuario(request.form.get('user'),request.form.get('email'), request.form.get('passwd'), request.form.get('end'))
    db.session.add(usuario)
    db.session.commit()  
-   return redirect (url_for('cadusuario'))
+   return redirect (url_for('usuario'))
 
 @app.route("/usuario/detalhar/<int:id>")
 def buscarusuario(id):
@@ -75,36 +132,46 @@ def buscarusuario(id):
 @app.route("/usuario/editar/<int:id>", methods=['GET','POST'])
 def editarusuario(id):
    usuario = Usuario.query.get(id)
-   return usuario.nome 
+   if request.method == 'POST':
+      usuario.nome = request.form.get('user')
+      usuario.email = request.form.get('email')
+      usuario.senha = hashlib.sha512(str(request.form.get('passwd')).encode("utf-8")).hexdigest()  
+      usuario.end = request.form.get('end')
+      db.session.add(usuario)
+      db.session.commit()
+      return redirect(url_for('usuario')) 
+    
+   return render_template('edicaousuario.html', usuario=usuario,  titulo="Usuario")
+
 
 @app.route("/usuario/deletar/<int:id>")
 def deletarusuario(id):
    usuario = Usuario.query.get(id)
    db.session.delete(usuario)
    db.session.commit()
-   return redirect(url_for('cadusuario'))
+   return redirect(url_for('usuario'))
 
 
 # na função get pega apenas os dados do usuario (pego o dado)
 # metodo post submeter alguma informação para o nosso servidor (mando o dado)
 
-@app.route("/anuncio/novo", methods = ['POST'])
-def novoanuncio():
-   anuncio = Anuncio(request.form.get('nome'),request.form.get('desc'), request.form.get('qtd'), request.form.get('preco'))
+@app.route("/anuncio/criar", methods = ['POST'])
+def criaranuncio():
+   anuncio = Anuncio(request.form.get('nome'),request.form.get('desc'), request.form.get('qtd'), request.form.get('preco'),request.form.get('cat'),request.form.get('uso'))
    db.session.add(anuncio)
    db.session.commit()  
    return redirect (url_for('anuncio'))
 
 @app.route("/cad/anuncio")
 def anuncio():
-  return render_template('anuncio.html', anuncio= Anuncio.query.all(),  categoria = Categoria)
+  return render_template('anuncio.html', anuncios = Anuncio.query.all(),  categorias = Categoria.query.all(), titulo="Anuncio")
 
 
 @app.route("/anuncios/pergunta")
 def perguntas():
    return render_template('pergunta.html')
 
-@app.route ("/anuncios/compras")
+@app.route ("/anuncios/compra")
 def compras():
    print("anuncio comprado")
    return ""
@@ -114,17 +181,16 @@ def favoritos():
    print("favorito inserido")
    return ""
 
-
-@app.route("/categoria/novo", methods =['POST'])
-def novacategoria():
-   categoria = Categoria (request.form.get('nome'), request.form.get('desc'))
-   db.session.add(categoria)
-   db.session.commit()
-   return redirect(url_for('categoria')) 
-
 @app.route("/config/categoria")
 def categoria():
-  return render_template('categoria.html', categoria = Categoria.query.all(),  titulo = 'Categoria')
+    return render_template('categoria.html', categorias = Categoria.query.all(), titulo='Categoria')
+
+@app.route("/categoria/criar", methods=['POST'])
+def criarcategoria():
+    categoria = Categoria(request.form.get('nome'), request.form.get('desc'))
+    db.session.add(categoria)
+    db.session.commit()
+    return redirect(url_for('categoria'))
 
 
 @app.route("/relatorios/vendas")

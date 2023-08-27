@@ -6,23 +6,23 @@
 
 <body>
     <h4>Edicao de {{titulo}}</h4>
-    <form action="/usuario/criar" method="post">
+    <form action="/usuario/editar/{{ usuario.id }}" method="post">
         <p><label for="user">Username</label></p>
-        <p><input type="text" id="user" name="user"></p>
+        <p><input type="text" id="user" name="user" value={{usuario.nome}}></p>
 
         <p><label for="email">E-mail</label></p>
-        <p><input type="text" id="email" name="email"></p>
+        <p><input type="text" id="email" name="email" value="{{usuario.email}}"></p>
 
         <p><label for="passwd">Password</label></p>
-        <p><input type="text" id="passwd" name="passwd"></p>
+        <p><input type="text" id="passwd" name="passwd" value="{{usuario.senha}}"></p>
 
         <p><label for="end">Endereço</label></p>
-        <p><input type="text" id="end" name="end"></p>
+        <p><input type="text" id="end" name="end" value="{{usuario.end}}"></p>
 
         <p><input type="submit" value="Alterar"></p>
 
     </form>
-    <a href="{{url_for("usuario")}}"> Cancelar</a>
+    <td><a href="{{url_for("usuario")}}"> Cancelar</a></td>
     
 </body>
 
