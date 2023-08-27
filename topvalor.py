@@ -89,7 +89,7 @@ def load_user(id):
 def login():
    if request.method == 'POST':
       email = request.form.get('email')
-      passwd = request.form.get('passwd')
+      passwd = hashlib.sha512(str(request.form.get('passwd')).encode("utf-8")).hexdigest()
 
       user = Usuario.query.filter_by(email=email, senha=passwd).first()
 
@@ -119,6 +119,7 @@ def usuario():
 
 @app.route("/usuario/criar", methods=['POST'])
 def criarusuario():
+   hash = hashlib.sha512(str(request.form.get('passwd')).encode("utf-8")).hexdigest()
    usuario = Usuario(request.form.get('user'),request.form.get('email'), request.form.get('passwd'), request.form.get('end'))
    db.session.add(usuario)
    db.session.commit()  
@@ -204,5 +205,6 @@ def relcompras():
 if __name__== 'mydb':
     print("mydb")
     db.create_all()
+
 
     
