@@ -1,0 +1,81 @@
+<!doctype html>
+<html>
+<head>    
+    <title>Top valor - Comprar e vender - Cadastro do {{titulo}}</title>
+    <link rel="stylesheet" href="../static/css/bootstrap.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header justify-content-center">
+            <h1>Cadastro de {{titulo}}</h1>
+        </div>    
+
+        <form action="/anuncio/criar" method="post">
+            <div class="form-group">
+                <label for="nome">Nome</label>
+                <input type="text" class="form-control" id="nome" name="nome">
+            </div>
+            <div class="form-group">    
+                <label for="desc">Desc</label>
+                <textarea rows="4" cols="50" id="desc" name="desc" class="form-control"></textarea>         
+            </div>
+            <div class="form-group">        
+                <label for="qtd">Quantidade</label>
+                <input type="text" class="form-control" id="qtd" name="qtd">
+            </div>
+            
+            <div class="form-group">        
+                <label for="preco">Preco</label>
+                <input type="text" class="form-control" id="preco" name="preco">
+            </div> 
+
+            <div>    
+                <p><label for="cat">Categoria</label>
+                <select id="cat" name="cat">
+                    
+                    {% for categoria in categorias %} 
+                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select></p>
+            </div>
+            <div class = "form-group">    
+                <label for="usu">Usuario</label>
+                <input type="text" class="form-control" id="uso" name="uso">
+            </div>  
+            <div class="form-group">      
+                <button type="submit" class="btn btn-primary">Cadastrar</button>
+            </div>  
+        </form>      
+    </div>        
+    <div class="container">
+        <div class="page-header justify-content-center">
+            <h1>Lista de {{titulo}}</h1>
+        </div>    
+        <table class="table table-striped table-responsive table-bordered">
+            <div class="justify-content-center">
+                <thead class="thread-default justify-content-center">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Desc</th>
+                        <th>Qtd</th>
+                        <th>Preco</th>
+                        <th>Categoria</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for anuncio in anuncios %}
+                        <tr>
+                            <td>{{ anuncio.nome }}</td>
+                            <td>{{ anuncio.desc }}</td>
+                            <td>{{ anuncio.qtd }}</td>
+                            <td>{{ anuncio.preco }}</td>
+                            <td>{{ anuncio.cat_id }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </div>    
+        </table>
+    </div>
+</body>      
+</html>
